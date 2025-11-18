@@ -1,0 +1,67 @@
+#!/bin/bash -l
+
+# Script for running SLURM jobs using multithreaded programs on Pawsey Setonix (2022)
+# Copyright statement: Copyright (c) 2022 Applied Bioinformatics Group, UWA, Perth WA, Australia
+
+# Available partitions:
+##	Name	Time limit (h)	Cores/node	No. nodes	MEM/node (Gb)	Mem/core (Gb)	
+## 	work	24		128		316		230		~2
+## 	long	96		128		8		230		~2
+##	highmem 24		128		8		980		~8
+##	copy	24		64		8		118		~2
+##	debug	1		128		8		230		~2
+
+# User defined SLURM commands. #CPUS per task (no. threads program uses) should be a multiple of 8.
+#SBATCH --job-name=run_Trinity
+#SBATCH --time=24:00:00
+#SBATCH --cpus-per-task=128
+#SBATCH --mem=800G
+#SBATCH --partition=highmem
+#SBATCH --output=run_trinity.out
+#SBATCH --error=run_trinity.err
+
+# Generic SLURM commands
+#SBATCH --ntasks=1
+#SBATCH --ntasks-per-node=1
+#SBATCH --clusters=setonix
+#SBATCH --account=pawsey0149
+
+# SLURM useful commands: sbatch, squeue, scancel
+# Run this script using sbatch [slurm].sh
+
+echo "========================================="
+echo "SLURM_JOB_ID = $SLURM_JOB_ID"
+echo "SLURM_NODELIST = $SLURM_NODELIST"
+if [ ! -z $SLURM_ARRAY_TASK_ID ]; then
+	echo "SLURM_ARRAY_TASK_ID = $SLURM_ARRAY_TASK_ID"
+fi
+echo "========================================="
+
+# Script
+
+# load environment and set variables
+module load singularity/4.1.0-nohost
+OUTPUT_DIR=/scratch/pawsey0149/tbergmann/Oyster_Transcriptome/trinity_meta_final
+SAMPLES=/scratch/pawsey0149/tbergmann/Oyster_Transcriptome/trinity_samples.txt
+SCRATCH=/scratch/pawsey0149/tbergmann/Oyster_Transcriptome
+TRINITY_IMAGE=/software/projects/pawsey0149/tbergmann/singularity/trinityrnaseq.v2.15.2.simg
+
+# Ensure output directory exists
+mkdir -p "$OUTPUT_DIR"
+
+# run trinity
+singularity exec -B $SCRATCH:${HOME} -e $TRINITY_IMAGE Trinity --seqType fq --max_memory 700G --samples_file "$SAMPLES" --SS_lib_type RF --CPU 128 --min_contig_length 300 --min_kmer_cov 2 --full_cleanup --output "$OUTPUT_DIR"
+
+# check if Trinity completed successfully
+if [ $? -eq 0 ]; then
+    echo "Trinity completed successfully."
+else
+    echo "Trinity encountered an error." >&2
+    exit 1
+fi
+
+# unload modules
+module unload singularity/4.1.0-nohost
+
+
+
