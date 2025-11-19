@@ -33,6 +33,8 @@
 # Trinity was run in a singularity image
 # Max memory limit of 200GB to ensure the package can be run in the work partition
 # 128 CPUs to boost processing speed
+# Minimum contig length of 300bp
+
 
 # SLURM useful commands: sbatch, squeue, scancel
 # Run this script using sbatch [slurm].sh
