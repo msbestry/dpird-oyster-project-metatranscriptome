@@ -1,16 +1,5 @@
 #!/bin/bash -l
 
-# Script for running SLURM jobs using multithreaded programs on Pawsey Setonix (2022)
-# Copyright statement: Copyright (c) 2022 Applied Bioinformatics Group, UWA, Perth WA, Australia
-
-# Available partitions:
-##      Name    Time limit (h)  Cores/node      No. nodes       MEM/node (Gb)   Mem/core (Gb)
-##      work    24              128             316             230             ~2
-##      long    96              128             8               230             ~2
-##      highmem 24              128             8               980             ~8
-##      copy    24              64              8               118             ~2
-##      debug   1               128             8               230             ~2
-
 # User defined SLURM commands. #CPUS per task (no. threads program uses) should be a multiple of 8.
 #SBATCH --job-name=trinity
 #SBATCH --time=24:00:00
@@ -29,12 +18,13 @@
 #SBATCH --mail-type=ALL
 #SBATCH --export=NONE
 
-# Assembly of RNAseq data with Trinity version
-# Trinity was run in a singularity image
+# Assembly of RNAseq data with Trinity version 2.15.2
+# Github: https://github.com/trinityrnaseq/trinityrnaseq
+# Trinity was run in a docker image that was pulled using singularity: https://hub.docker.com/r/trinityrnaseq/trinityrnaseq/
 # Max memory limit of 200GB to ensure the package can be run in the work partition
+# Sample type: fq (fastq files)
 # 128 CPUs to boost processing speed
 # Minimum contig length of 300bp
-
 
 # SLURM useful commands: sbatch, squeue, scancel
 # Run this script using sbatch [slurm].sh
